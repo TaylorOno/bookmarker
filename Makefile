@@ -1,3 +1,9 @@
+.PHONY: sonar
+## sonar: *REQUIRES LOCAL SONARQUBE and SONAR-SCANNER run uploads to local sonar instance
+sonar: test
+	sonar-scanner -Dsonar.projectKey=bookmarker -Dsonar.exclusions=**/*_test.go,**/test_data/*,**/mocks/**,**/main.go -Dsonar.host.url=http://localhost:9000 -Dsonar.source=. -Dsonar.go.coverage.reportPaths=**/coverage.out
+
+
 .PHONY: run-local
 ## run-local: *REQUIRES DOCKER COMPOSE runs a local instance of the app and dependencies
 run-local:
@@ -7,7 +13,7 @@ run-local:
 .PHONY: test
 ## test: runs all tests
 test:
-	go test ./...
+	go test ./... -race -coverprofile=./coverage.out
 
 .PHONY: vet
 ## vet: runs go vet

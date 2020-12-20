@@ -1,8 +1,9 @@
 package service_test
 
 import (
-	"github.com/TaylorOno/golandreporter"
 	"testing"
+
+	"github.com/TaylorOno/golandreporter"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

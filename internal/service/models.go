@@ -23,11 +23,14 @@ type BookmarkRequest struct {
 }
 
 type Bookmark struct {
-	Book                 string                 `json:"book"`
-	LastUpdated          string                 `json:"lastUpdated,omitempty"`
-	Series               string                 `json:"series,omitempty"`
-	Status               string                 `json:"status"`
-	Page                 int                    `json:"page"`
+	Book        string `json:"book"`
+	LastUpdated string `json:"lastUpdated,omitempty"`
+	Series      string `json:"series,omitempty"`
+	Status      string `json:"status"`
+	Page        int    `json:"page"`
+
+	//AdditionalProperties provide for extendable data model there are no guarantees on any fields provided.  Data will
+	//be projected into secondary indexes so be cautious of field size.
 	AdditionalProperties map[string]interface{} `json:"additionalProperties,omitempty"`
 }
 

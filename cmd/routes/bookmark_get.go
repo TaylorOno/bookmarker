@@ -3,6 +3,7 @@ package routes
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 
 	"github.com/TaylorOno/bookmarker/internal/repository"
@@ -11,17 +12,15 @@ import (
 
 //GetBookmark given a user and a book returns a matching bookmark if any.
 func (s *Server) GetBookmark(w http.ResponseWriter, req *http.Request) {
-	BookmarkRequest, err := s.CreateBookmarkRequest(req)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
+	BookmarkRequest := s.CreateBookmarkRequest(req)
+
 	result, err := s.BookmarkService.GetBookmark(req.Context(), BookmarkRequest)
 	if err != nil {
 		if errors.Is(err, repository.NotFoundException) {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
+		log.Print(err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -33,9 +32,9 @@ func (s *Server) GetBookmark(w http.ResponseWriter, req *http.Request) {
 }
 
 //CreateBookmarkRequest extracts service.BookmarkRequest from a http.Request.
-func (s *Server) CreateBookmarkRequest(req *http.Request) (service.BookmarkRequest, error) {
+func (s *Server) CreateBookmarkRequest(req *http.Request) service.BookmarkRequest {
 	return service.BookmarkRequest{
 		UserId: getUserID(req.URL.Path),
 		Book:   getBook(req.URL.Path),
-	}, nil
+	}
 }

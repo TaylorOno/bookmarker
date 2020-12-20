@@ -64,19 +64,19 @@ func (mr *MockBookmarkRepositoryMockRecorder) GetBookmark(ctx, user, book interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBookmark", reflect.TypeOf((*MockBookmarkRepository)(nil).GetBookmark), ctx, user, book)
 }
 
-// GetRecentBookmarks mocks base method
-func (m *MockBookmarkRepository) GetRecentBookmarks(ctx context.Context, user string, limit int64) ([]repository.UserBookmark, error) {
+// GetBookmarks mocks base method
+func (m *MockBookmarkRepository) GetBookmarks(ctx context.Context, user, filter string, limit int64) ([]repository.UserBookmark, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetBookmarks", ctx, user, limit)
+	ret := m.ctrl.Call(m, "GetBookmarks", ctx, user, filter, limit)
 	ret0, _ := ret[0].([]repository.UserBookmark)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetRecentBookmarks indicates an expected call of GetRecentBookmarks
-func (mr *MockBookmarkRepositoryMockRecorder) GetRecentBookmarks(ctx, user, limit interface{}) *gomock.Call {
+// GetBookmarks indicates an expected call of GetBookmarks
+func (mr *MockBookmarkRepositoryMockRecorder) GetBookmarks(ctx, user, filter, limit interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBookmarks", reflect.TypeOf((*MockBookmarkRepository)(nil).GetRecentBookmarks), ctx, user, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBookmarks", reflect.TypeOf((*MockBookmarkRepository)(nil).GetBookmarks), ctx, user, filter, limit)
 }
 
 // UpdateBookmark mocks base method
@@ -95,16 +95,15 @@ func (mr *MockBookmarkRepositoryMockRecorder) UpdateBookmark(ctx, bookmark inter
 }
 
 // DeleteBookmark mocks base method
-func (m *MockBookmarkRepository) DeleteBookmark(ctx context.Context, bookmark repository.UserBookmark) (repository.UserBookmark, error) {
+func (m *MockBookmarkRepository) DeleteBookmark(ctx context.Context, user, book string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteBookmark", ctx, bookmark)
-	ret0, _ := ret[0].(repository.UserBookmark)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "DeleteBookmark", ctx, user, book)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // DeleteBookmark indicates an expected call of DeleteBookmark
-func (mr *MockBookmarkRepositoryMockRecorder) DeleteBookmark(ctx, bookmark interface{}) *gomock.Call {
+func (mr *MockBookmarkRepositoryMockRecorder) DeleteBookmark(ctx, user, book interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBookmark", reflect.TypeOf((*MockBookmarkRepository)(nil).DeleteBookmark), ctx, bookmark)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBookmark", reflect.TypeOf((*MockBookmarkRepository)(nil).DeleteBookmark), ctx, user, book)
 }

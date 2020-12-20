@@ -51,6 +51,13 @@ var _ = Describe("BookmarkList", func() {
 			Expect(result.Result().StatusCode).To(Equal(200))
 		})
 
+		It("Returns 400 if filter is invalid", func() {
+			req, _ := http.NewRequest(http.MethodGet, "/test?filter=ADVENTURE", nil)
+			result := httptest.NewRecorder()
+			server.GetBookmarks(result, req)
+			Expect(result.Result().StatusCode).To(Equal(400))
+		})
+
 		It("Returns 404 if no bookmarks are found", func() {
 			req, _ := http.NewRequest(http.MethodGet, "/test", nil)
 			result := httptest.NewRecorder()

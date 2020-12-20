@@ -22,7 +22,7 @@ var (
 
 type Bookmarker interface {
 	SaveBookmark(ctx context.Context, b service.NewBookmarkRequest) (service.Bookmark, error)
-	DeleteBookmark(ctx context.Context, b service.DeleteBookmarkRequest) (service.Bookmark, error)
+	DeleteBookmark(ctx context.Context, b service.DeleteBookmarkRequest) error
 	GetBookmark(ctx context.Context, b service.BookmarkRequest) (service.Bookmark, error)
 	GetBookmarkList(ctx context.Context, b service.BookmarkListRequest) ([]service.Bookmark, error)
 }
@@ -36,7 +36,7 @@ type Server struct {
 func (s *Server) SetRoutes() *mux.Router {
 	r := mux.NewRouter()
 	r.HandleFunc("/{user}", s.SaveBookmark).Methods(http.MethodPost)
-	r.HandleFunc("/{user}", s.DeleteBookmark).Methods(http.MethodDelete)
+	r.HandleFunc("/{user}/{Book}", s.DeleteBookmark).Methods(http.MethodDelete)
 	r.HandleFunc("/{user}", s.GetBookmarks).Methods(http.MethodGet)
 	r.HandleFunc("/{user}/{Book}", s.GetBookmark).Methods(http.MethodGet)
 	return r

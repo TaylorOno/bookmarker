@@ -3,6 +3,7 @@ package routes
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 
 	"github.com/TaylorOno/bookmarker/internal/repository"
@@ -10,7 +11,7 @@ import (
 )
 
 //GetBookmarks returns a lists of bookmarks for a given user.
-//filter query param for IN_PROGRESS of FINISHED.
+//filter query param for IN_PROGRESS or FINISHED.
 //limit query param can be used to limit the items that are returned (default 30).
 func (s *Server) GetBookmarks(w http.ResponseWriter, req *http.Request) {
 	BookmarkListRequest, err := s.CreateBookmarkListRequest(req)
@@ -24,6 +25,7 @@ func (s *Server) GetBookmarks(w http.ResponseWriter, req *http.Request) {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
+		log.Print(err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

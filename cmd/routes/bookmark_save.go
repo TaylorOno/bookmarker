@@ -2,6 +2,7 @@ package routes
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/TaylorOno/bookmarker/internal/service"
@@ -20,6 +21,7 @@ func (s *Server) SaveBookmark(w http.ResponseWriter, req *http.Request) {
 
 	_, err = s.BookmarkService.SaveBookmark(req.Context(), newBookmarkRequest)
 	if err != nil {
+		log.Print(err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

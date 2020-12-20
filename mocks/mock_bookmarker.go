@@ -50,12 +50,11 @@ func (mr *MockBookmarkerMockRecorder) SaveBookmark(ctx, b interface{}) *gomock.C
 }
 
 // DeleteBookmark mocks base method
-func (m *MockBookmarker) DeleteBookmark(ctx context.Context, b service.DeleteBookmarkRequest) (service.Bookmark, error) {
+func (m *MockBookmarker) DeleteBookmark(ctx context.Context, b service.DeleteBookmarkRequest) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteBookmark", ctx, b)
-	ret0, _ := ret[0].(service.Bookmark)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // DeleteBookmark indicates an expected call of DeleteBookmark

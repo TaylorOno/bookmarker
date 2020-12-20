@@ -1,5 +1,10 @@
 package repository
 
+type bookmarkKey struct {
+	UserId string
+	Book   string
+}
+
 type UserBookmark struct {
 	UserId      string
 	LastUpdated string
