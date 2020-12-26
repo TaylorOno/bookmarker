@@ -19,11 +19,26 @@ var (
 
 type BookmarkRepository interface {
 	CreateBookmark(ctx context.Context, bookmark UserBookmark) (UserBookmark, error)
-
 	GetBookmark(ctx context.Context, user string, book string) (UserBookmark, error)
-	GetBookmarks(ctx context.Context, user string, filter string, limit int64) ([]UserBookmark, error)
-
+	GetBookmarks(ctx context.Context, user string, filter string, limit int) ([]UserBookmark, error)
 	UpdateBookmark(ctx context.Context, bookmark UserBookmark) (UserBookmark, error)
-
 	DeleteBookmark(ctx context.Context, user string, book string) error
+}
+
+type bookmarkKey struct {
+	UserId string
+	Book   string
+}
+
+type UserBookmark struct {
+	UserId      string
+	LastUpdated string
+	Book        string
+	Series      string
+	Status      string
+	Page        int
+
+	//AdditionalProperties provide for extendable data model there are no guarantees on any fields provided.  Data will
+	//be projected into secondary indexes so be cautious of field size.
+	AdditionalProperties map[string]interface{}
 }

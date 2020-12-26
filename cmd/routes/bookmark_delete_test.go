@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/TaylorOno/bookmarker/mocks"
+	"github.com/TaylorOno/bookmarker/tests/mocks"
 	"github.com/go-playground/validator/v10"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"

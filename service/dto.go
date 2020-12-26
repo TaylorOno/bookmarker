@@ -36,6 +36,6 @@ type Bookmark struct {
 
 type BookmarkListRequest struct {
 	UserId string `validate:"required"`
-	Limit  int64  `validate:"required"`
+	Limit  int    `validate:"required"`
 	Filter string `validate:"oneof=NONE IN_PROGRESS FINISHED"`
 }

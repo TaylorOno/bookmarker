@@ -6,7 +6,7 @@ package mocks
 
 import (
 	context "context"
-	repository "github.com/TaylorOno/bookmarker/internal/repository"
+	repository "github.com/TaylorOno/bookmarker/service/repository"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
 )
@@ -65,7 +65,7 @@ func (mr *MockBookmarkRepositoryMockRecorder) GetBookmark(ctx, user, book interf
 }
 
 // GetBookmarks mocks base method
-func (m *MockBookmarkRepository) GetBookmarks(ctx context.Context, user, filter string, limit int64) ([]repository.UserBookmark, error) {
+func (m *MockBookmarkRepository) GetBookmarks(ctx context.Context, user string, filter string, limit int) ([]repository.UserBookmark, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetBookmarks", ctx, user, filter, limit)
 	ret0, _ := ret[0].([]repository.UserBookmark)

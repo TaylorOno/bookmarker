@@ -6,7 +6,7 @@ package mocks
 
 import (
 	context "context"
-	service "github.com/TaylorOno/bookmarker/internal/service"
+	service2 "github.com/TaylorOno/bookmarker/service"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
 )
@@ -35,10 +35,10 @@ func (m *MockBookmarker) EXPECT() *MockBookmarkerMockRecorder {
 }
 
 // SaveBookmark mocks base method
-func (m *MockBookmarker) SaveBookmark(ctx context.Context, b service.NewBookmarkRequest) (service.Bookmark, error) {
+func (m *MockBookmarker) SaveBookmark(ctx context.Context, b service2.NewBookmarkRequest) (service2.Bookmark, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveBookmark", ctx, b)
-	ret0, _ := ret[0].(service.Bookmark)
+	ret0, _ := ret[0].(service2.Bookmark)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -50,7 +50,7 @@ func (mr *MockBookmarkerMockRecorder) SaveBookmark(ctx, b interface{}) *gomock.C
 }
 
 // DeleteBookmark mocks base method
-func (m *MockBookmarker) DeleteBookmark(ctx context.Context, b service.DeleteBookmarkRequest) error {
+func (m *MockBookmarker) DeleteBookmark(ctx context.Context, b service2.DeleteBookmarkRequest) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteBookmark", ctx, b)
 	ret0, _ := ret[0].(error)
@@ -64,10 +64,10 @@ func (mr *MockBookmarkerMockRecorder) DeleteBookmark(ctx, b interface{}) *gomock
 }
 
 // GetBookmark mocks base method
-func (m *MockBookmarker) GetBookmark(ctx context.Context, b service.BookmarkRequest) (service.Bookmark, error) {
+func (m *MockBookmarker) GetBookmark(ctx context.Context, b service2.BookmarkRequest) (service2.Bookmark, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetBookmark", ctx, b)
-	ret0, _ := ret[0].(service.Bookmark)
+	ret0, _ := ret[0].(service2.Bookmark)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -79,10 +79,10 @@ func (mr *MockBookmarkerMockRecorder) GetBookmark(ctx, b interface{}) *gomock.Ca
 }
 
 // GetBookmarkList mocks base method
-func (m *MockBookmarker) GetBookmarkList(ctx context.Context, b service.BookmarkListRequest) ([]service.Bookmark, error) {
+func (m *MockBookmarker) GetBookmarkList(ctx context.Context, b service2.BookmarkListRequest) ([]service2.Bookmark, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetBookmarkList", ctx, b)
-	ret0, _ := ret[0].([]service.Bookmark)
+	ret0, _ := ret[0].([]service2.Bookmark)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

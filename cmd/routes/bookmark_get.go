@@ -3,11 +3,11 @@ package routes
 import (
 	"encoding/json"
 	"errors"
+	service2 "github.com/TaylorOno/bookmarker/service"
 	"log"
 	"net/http"
 
-	"github.com/TaylorOno/bookmarker/internal/repository"
-	"github.com/TaylorOno/bookmarker/internal/service"
+	"github.com/TaylorOno/bookmarker/service/repository"
 )
 
 //GetBookmark given a user and a book returns a matching bookmark if any.
@@ -32,8 +32,8 @@ func (s *Server) GetBookmark(w http.ResponseWriter, req *http.Request) {
 }
 
 //CreateBookmarkRequest extracts service.BookmarkRequest from a http.Request.
-func (s *Server) CreateBookmarkRequest(req *http.Request) service.BookmarkRequest {
-	return service.BookmarkRequest{
+func (s *Server) CreateBookmarkRequest(req *http.Request) service2.BookmarkRequest {
+	return service2.BookmarkRequest{
 		UserId: getUserID(req.URL.Path),
 		Book:   getBook(req.URL.Path),
 	}

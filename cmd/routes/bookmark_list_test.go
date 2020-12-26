@@ -3,13 +3,13 @@ package routes_test
 import (
 	"errors"
 	"fmt"
+	service2 "github.com/TaylorOno/bookmarker/service"
 	"net/http"
 	"net/http/httptest"
 
 	"github.com/TaylorOno/bookmarker/cmd/routes"
-	"github.com/TaylorOno/bookmarker/internal/repository"
-	"github.com/TaylorOno/bookmarker/internal/service"
-	"github.com/TaylorOno/bookmarker/mocks"
+	"github.com/TaylorOno/bookmarker/service/repository"
+	"github.com/TaylorOno/bookmarker/tests/mocks"
 	"github.com/go-playground/validator/v10"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -39,7 +39,7 @@ var _ = Describe("BookmarkList", func() {
 	Context("GetBookmarks", func() {
 		It("Returns 200 if bookmarks are returned", func() {
 			req, _ := http.NewRequest(http.MethodGet, "/test", nil)
-			bookmarker.EXPECT().GetBookmarkList(gomock.Any(), gomock.Any()).Return([]service.Bookmark{{
+			bookmarker.EXPECT().GetBookmarkList(gomock.Any(), gomock.Any()).Return([]service2.Bookmark{{
 				Book:                 "book1",
 				Series:               "",
 				Status:               "IN_PROGRESS",
@@ -61,14 +61,14 @@ var _ = Describe("BookmarkList", func() {
 		It("Returns 404 if no bookmarks are found", func() {
 			req, _ := http.NewRequest(http.MethodGet, "/test", nil)
 			result := httptest.NewRecorder()
-			bookmarker.EXPECT().GetBookmarkList(gomock.Any(), gomock.Any()).Return([]service.Bookmark{}, repository.NotFoundException)
+			bookmarker.EXPECT().GetBookmarkList(gomock.Any(), gomock.Any()).Return([]service2.Bookmark{}, repository.NotFoundException)
 			server.GetBookmarks(result, req)
 			Expect(result.Result().StatusCode).To(Equal(404))
 		})
 
 		It("Returns 500 if request fails", func() {
 			req, _ := http.NewRequest(http.MethodGet, "/test", nil)
-			bookmarker.EXPECT().GetBookmarkList(gomock.Any(), gomock.Any()).Return([]service.Bookmark{}, errors.New("get error"))
+			bookmarker.EXPECT().GetBookmarkList(gomock.Any(), gomock.Any()).Return([]service2.Bookmark{}, errors.New("get error"))
 			result := httptest.NewRecorder()
 			server.GetBookmarks(result, req)
 			Expect(result.Result().StatusCode).To(Equal(500))
@@ -82,7 +82,7 @@ var _ = Describe("BookmarkList", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(fmt.Sprintf("%T", result)).To(Equal("service.BookmarkListRequest"))
 			Expect(result.UserId).To(Equal("test-user"))
-			Expect(result.Limit).To(Equal(int64(7)))
+			Expect(result.Limit).To(Equal(7))
 			Expect(result.Filter).To(Equal("FINISHED"))
 		})
 
@@ -92,7 +92,7 @@ var _ = Describe("BookmarkList", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(fmt.Sprintf("%T", result)).To(Equal("service.BookmarkListRequest"))
 			Expect(result.UserId).To(Equal("test-user"))
-			Expect(result.Limit).To(Equal(int64(30)))
+			Expect(result.Limit).To(Equal(30))
 			Expect(result.Filter).To(Equal("FINISHED"))
 		})
 
@@ -102,7 +102,7 @@ var _ = Describe("BookmarkList", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(fmt.Sprintf("%T", result)).To(Equal("service.BookmarkListRequest"))
 			Expect(result.UserId).To(Equal("test-user"))
-			Expect(result.Limit).To(Equal(int64(30)))
+			Expect(result.Limit).To(Equal(30))
 			Expect(result.Filter).To(Equal("NONE"))
 		})
 

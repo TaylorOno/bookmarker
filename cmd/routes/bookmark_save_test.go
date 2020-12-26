@@ -3,12 +3,12 @@ package routes_test
 import (
 	"errors"
 	"fmt"
+	service2 "github.com/TaylorOno/bookmarker/service"
 	"net/http"
 	"net/http/httptest"
 
 	"github.com/TaylorOno/bookmarker/cmd/routes"
-	"github.com/TaylorOno/bookmarker/internal/service"
-	"github.com/TaylorOno/bookmarker/mocks"
+	"github.com/TaylorOno/bookmarker/tests/mocks"
 	"github.com/go-playground/validator/v10"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -54,7 +54,7 @@ var _ = Describe("BookmarkSave", func() {
 
 		It("Returns 500 if fails to save", func() {
 			req, _ := http.NewRequest(http.MethodPost, "/test", bodyFromFile("valid_bookmark.json"))
-			bookmarker.EXPECT().SaveBookmark(gomock.Any(), gomock.Any()).Return(service.Bookmark{}, errors.New("save error"))
+			bookmarker.EXPECT().SaveBookmark(gomock.Any(), gomock.Any()).Return(service2.Bookmark{}, errors.New("save error"))
 			result := httptest.NewRecorder()
 			server.SaveBookmark(result, req)
 			Expect(result.Result().StatusCode).To(Equal(500))

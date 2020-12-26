@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"github.com/TaylorOno/bookmarker/internal/service"
+	service2 "github.com/TaylorOno/bookmarker/service"
 	"log"
 	"net/http"
 )
@@ -22,8 +22,8 @@ func (s *Server) DeleteBookmark(w http.ResponseWriter, req *http.Request) {
 }
 
 //DeleteBookmarkRequest extracts service.DeleteBookmarkRequest from a http.Request.
-func (s *Server) DeleteBookmarkRequest(req *http.Request) service.DeleteBookmarkRequest {
-	return service.DeleteBookmarkRequest{
+func (s *Server) DeleteBookmarkRequest(req *http.Request) service2.DeleteBookmarkRequest {
+	return service2.DeleteBookmarkRequest{
 		UserId: getUserID(req.URL.Path),
 		Book:   getBook(req.URL.Path),
 	}

@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TaylorOno/bookmarker/internal/repository"
+	"github.com/TaylorOno/bookmarker/service/repository"
 )
 
 type Service struct {
@@ -19,18 +19,6 @@ func (s *Service) SaveBookmark(ctx context.Context, b NewBookmarkRequest) (Bookm
 	}
 
 	return newBookmark(result), nil
-}
-
-func createUserBookmark(b NewBookmarkRequest) repository.UserBookmark {
-	return repository.UserBookmark{
-		UserId:               b.UserId,
-		LastUpdated:          time.Now().UTC().Format("2006-01-02T15:04:05Z07:00.000"),
-		Book:                 strings.ToLower(b.Book),
-		Series:               b.Series,
-		Status:               b.Status,
-		Page:                 b.Page,
-		AdditionalProperties: b.AdditionalProperties,
-	}
 }
 
 func (s *Service) DeleteBookmark(ctx context.Context, b DeleteBookmarkRequest) error {
@@ -58,6 +46,18 @@ func (s *Service) GetBookmarkList(ctx context.Context, b BookmarkListRequest) ([
 	}
 
 	return toBookMarks(userBookmarks), nil
+}
+
+func createUserBookmark(b NewBookmarkRequest) repository.UserBookmark {
+	return repository.UserBookmark{
+		UserId:               b.UserId,
+		LastUpdated:          time.Now().UTC().Format("2006-01-02T15:04:05Z07:00.000"),
+		Book:                 strings.ToLower(b.Book),
+		Series:               b.Series,
+		Status:               b.Status,
+		Page:                 b.Page,
+		AdditionalProperties: b.AdditionalProperties,
+	}
 }
 
 func toBookMarks(userBookmarks []repository.UserBookmark) []Bookmark {

@@ -6,20 +6,22 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws/request"
 	"log"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
 )
 
 var (
-	//Timeout for request to dynamo defaults to 1 second
-	Timeout = 1 * time.Second
+	//timeout for request to dynamo defaults to 1 second
+	timeout = 1 * time.Second
+
+	//maxPageSize page size for queries
+	maxPageSize = 100
 )
 
 type DynamoClient interface {
@@ -37,17 +39,9 @@ type Dynamo struct {
 	TableName string
 }
 
-//CreateDynamoRepository returns the DynamoDB repository implementation
-func CreateDynamoRepository(awsSession *session.Session, tableName string) *Dynamo {
-	return &Dynamo{
-		Client:    dynamodb.New(awsSession),
-		TableName: tableName,
-	}
-}
-
 //CreateBookmark adds a bookmark for a user
 func (d *Dynamo) CreateBookmark(ctx context.Context, bookmark UserBookmark) (UserBookmark, error) {
-	ctx, cancelFn := context.WithTimeout(ctx, Timeout)
+	ctx, cancelFn := context.WithTimeout(ctx, timeout)
 	defer cancelFn()
 
 	createItemInput, err := d.createItemInput(bookmark)
@@ -55,12 +49,12 @@ func (d *Dynamo) CreateBookmark(ctx context.Context, bookmark UserBookmark) (Use
 		return bookmark, err
 	}
 
-	result, err := d.Client.PutItemWithContext(ctx, createItemInput)
+	putResult, err := d.Client.PutItemWithContext(ctx, createItemInput)
 	if err != nil {
 		return bookmark, err
 	}
 
-	log.Print(fmt.Sprintf("CreateBookmark WCU: %v", *result.ConsumedCapacity.CapacityUnits))
+	log.Print(fmt.Sprintf("CreateBookmark WCU: %v", *putResult.ConsumedCapacity.CapacityUnits))
 
 	return bookmark, nil
 }
@@ -89,14 +83,14 @@ func (d *Dynamo) UpdateBookmark(ctx context.Context, bookmark UserBookmark) (Use
 func (d *Dynamo) DeleteBookmark(ctx context.Context, user string, book string) error {
 	deleteItemInput := d.createDeleteItemInput(user, book)
 
-	ctx, cancelFn := context.WithTimeout(ctx, Timeout)
+	ctx, cancelFn := context.WithTimeout(ctx, timeout)
 	defer cancelFn()
 
-	result, err := d.Client.DeleteItemWithContext(ctx, deleteItemInput)
+	deleteResult, err := d.Client.DeleteItemWithContext(ctx, deleteItemInput)
 	if err != nil {
 		return err
 	}
-	log.Print(fmt.Sprintf("GetBookmark WCU: %v", *result.ConsumedCapacity.CapacityUnits))
+	log.Print(fmt.Sprintf("GetBookmark WCU: %v", *deleteResult.ConsumedCapacity.CapacityUnits))
 
 	return nil
 }
@@ -121,20 +115,20 @@ func (d *Dynamo) GetBookmark(ctx context.Context, user string, book string) (Use
 	var bookmark UserBookmark
 	getItemInput := d.createGetItemInput(user, book)
 
-	ctx, cancelFn := context.WithTimeout(ctx, Timeout)
+	ctx, cancelFn := context.WithTimeout(ctx, timeout)
 	defer cancelFn()
 
-	result, err := d.Client.GetItemWithContext(ctx, getItemInput)
+	getResult, err := d.Client.GetItemWithContext(ctx, getItemInput)
 	if err != nil {
 		return bookmark, err
 	}
-	log.Print(fmt.Sprintf("GetBookmark RCU: %v", *result.ConsumedCapacity.CapacityUnits))
+	log.Print(fmt.Sprintf("GetBookmark RCU: %v", *getResult.ConsumedCapacity.CapacityUnits))
 
-	if len(result.Item) <= 0 {
+	if len(getResult.Item) <= 0 {
 		return bookmark, NotFoundException
 	}
 
-	err = dynamodbattribute.UnmarshalMap(result.Item, &bookmark)
+	err = dynamodbattribute.UnmarshalMap(getResult.Item, &bookmark)
 	if err != nil {
 		return bookmark, err
 	}
@@ -158,33 +152,42 @@ func (d *Dynamo) createGetItemInput(user string, book string) *dynamodb.GetItemI
 }
 
 //GetBookmarks returns a list of a users bookmarks from newest to oldest
-func (d *Dynamo) GetBookmarks(ctx context.Context, user string, statusFilter string, limit int64) ([]UserBookmark, error) {
+func (d *Dynamo) GetBookmarks(ctx context.Context, user string, filter string, limit int) ([]UserBookmark, error) {
 	var bookmarks []UserBookmark
 
-	ctx, cancelFn := context.WithTimeout(ctx, Timeout)
+	ctx, cancelFn := context.WithTimeout(ctx, timeout)
 	defer cancelFn()
 
-	itemQueryInput, err := d.createFilterQuery(user, statusFilter, limit)
+	itemQueryInput, err := d.createFilterQuery(user, filter)
 	if err != nil {
 		return bookmarks, err
 	}
 
-	result, err := d.Client.QueryWithContext(ctx, itemQueryInput)
+	queryResult, err := d.Client.QueryWithContext(ctx, itemQueryInput)
 	if err != nil {
 		return bookmarks, err
 	}
 
-	log.Print(fmt.Sprintf("GetBookmarks RCU: %v", *result.ConsumedCapacity.CapacityUnits))
+	log.Print(fmt.Sprintf("GetBookmarks RCU: %v", *queryResult.ConsumedCapacity.CapacityUnits))
 
-	err = dynamodbattribute.UnmarshalListOfMaps(result.Items, &bookmarks)
+	err = dynamodbattribute.UnmarshalListOfMaps(queryResult.Items, &bookmarks)
 	if err != nil {
 		return bookmarks, err
 	}
 
-	return bookmarks, nil
+	limit = min(len(bookmarks), limit)
+
+	return bookmarks[:limit], nil
 }
 
-func (d *Dynamo) createFilterQuery(user string, statusFilter string, limit int64) (*dynamodb.QueryInput, error) {
+func min(i int, j int) int {
+	if i < j {
+		return i
+	}
+	return j
+}
+
+func (d *Dynamo) createFilterQuery(user string, statusFilter string) (*dynamodb.QueryInput, error) {
 	var expr expression.Expression
 	var err error
 
@@ -204,7 +207,7 @@ func (d *Dynamo) createFilterQuery(user string, statusFilter string, limit int64
 		IndexName:                 aws.String("History"),
 		Select:                    aws.String("ALL_PROJECTED_ATTRIBUTES"),
 		ReturnConsumedCapacity:    aws.String("TOTAL"),
-		Limit:                     aws.Int64(limit),
+		Limit:                     aws.Int64(int64(maxPageSize)),
 		ScanIndexForward:          aws.Bool(false),
 		TableName:                 aws.String(d.TableName),
 	}, err

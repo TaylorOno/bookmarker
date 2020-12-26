@@ -3,11 +3,11 @@ package routes
 import (
 	"encoding/json"
 	"errors"
+	service2 "github.com/TaylorOno/bookmarker/service"
 	"log"
 	"net/http"
 
-	"github.com/TaylorOno/bookmarker/internal/repository"
-	"github.com/TaylorOno/bookmarker/internal/service"
+	"github.com/TaylorOno/bookmarker/service/repository"
 )
 
 //GetBookmarks returns a lists of bookmarks for a given user.
@@ -37,8 +37,8 @@ func (s *Server) GetBookmarks(w http.ResponseWriter, req *http.Request) {
 }
 
 //CreateBookmarkListRequest extracts service.BookmarkListRequest from a http.Request.
-func (s *Server) CreateBookmarkListRequest(req *http.Request) (service.BookmarkListRequest, error) {
-	request := service.BookmarkListRequest{
+func (s *Server) CreateBookmarkListRequest(req *http.Request) (service2.BookmarkListRequest, error) {
+	request := service2.BookmarkListRequest{
 		UserId: getUserID(req.URL.Path),
 		Limit:  getLimit(req.URL.Query()),
 		Filter: getFilter(req.URL.Query()),

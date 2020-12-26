@@ -10,6 +10,11 @@ run-local:
 	export ENVIRONMENT=local
 	docker-compose up -d
 
+.PHONY: test-integration
+## test-integration: runs integration tests
+test-integration:
+	go test ./... -race -coverprofile=./coverage.out -v -tags integration
+
 .PHONY: test
 ## test: runs all tests
 test:

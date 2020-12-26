@@ -3,19 +3,20 @@ package repository_test
 import (
 	"context"
 	"errors"
-	"github.com/TaylorOno/bookmarker/internal/repository"
-	"github.com/TaylorOno/bookmarker/mocks"
+	"time"
+
+	"github.com/TaylorOno/bookmarker/service/repository"
+	"github.com/TaylorOno/bookmarker/tests/mocks"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"time"
 )
 
 var _ = Describe("Dynamo", func() {
-	repository.Timeout = 100 * time.Millisecond
+	repository.SetTimeOut(100 * time.Millisecond)
 
 	var (
 		mockCtrl      *gomock.Controller
@@ -44,6 +45,16 @@ var _ = Describe("Dynamo", func() {
 
 	AfterEach(func() {
 		mockCtrl.Finish()
+	})
+
+	Context("NewDynamoRepository", func() {
+		It("Checks or Creates Table and returns a Dynamo Client", func() {
+			var client *repository.Dynamo
+			dynamoClient.EXPECT().CreateTable(gomock.Any())
+			dynamoClient.EXPECT().WaitUntilTableExistsWithContext(gomock.Any(), gomock.Any(), gomock.Any())
+			client = repository.NewDynamoRepository(dynamoClient, "testTable")
+			Expect(client).ToNot(BeNil())
+		})
 	})
 
 	Context("CreateBookmark", func() {
@@ -192,7 +203,7 @@ var _ = Describe("Dynamo", func() {
 					argumentCapture = b
 					return getQueryOutput, nil
 				})
-			_, err := dynamo.GetBookmarks(context.Background(), "test", "NONE", 30)
+			_, err := dynamo.GetBookmarks(context.Background(), "test", "NONE", 1)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(*argumentCapture.TableName).To(Equal("test"))
 			Expect(*argumentCapture.IndexName).To(Equal("History"))
@@ -209,7 +220,7 @@ var _ = Describe("Dynamo", func() {
 					argumentCapture = b
 					return getQueryOutput, nil
 				})
-			_, err := dynamo.GetBookmarks(context.Background(), "test", "FINISHED", 30)
+			_, err := dynamo.GetBookmarks(context.Background(), "test", "FINISHED", 1)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(*argumentCapture.TableName).To(Equal("test"))
 			Expect(*argumentCapture.IndexName).To(Equal("History"))
@@ -227,7 +238,7 @@ var _ = Describe("Dynamo", func() {
 					argumentCapture = b
 					return getQueryOutput, nil
 				})
-			_, err := dynamo.GetBookmarks(context.Background(), "test", "IN_PROGRESS", 30)
+			_, err := dynamo.GetBookmarks(context.Background(), "test", "IN_PROGRESS", 1)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(*argumentCapture.TableName).To(Equal("test"))
 			Expect(*argumentCapture.IndexName).To(Equal("History"))
@@ -238,7 +249,7 @@ var _ = Describe("Dynamo", func() {
 		It("Returns error if query fails", func() {
 			getQueryOutput := testQueryResponse()
 			dynamoClient.EXPECT().QueryWithContext(gomock.Any(), gomock.Any()).Return(getQueryOutput, errors.New("exception"))
-			_, err := dynamo.GetBookmarks(context.Background(), "test", "NONE", 30)
+			_, err := dynamo.GetBookmarks(context.Background(), "test", "NONE", 1)
 			Expect(err).To(HaveOccurred())
 		})
 	})
@@ -255,7 +266,8 @@ func testGetResponse(item *repository.UserBookmark) *dynamodb.GetItemOutput {
 }
 
 func testQueryResponse() *dynamodb.QueryOutput {
-	var av []map[string]*dynamodb.AttributeValue
+	bookmark, _ := dynamodbattribute.MarshalMap(repository.UserBookmark{UserId: "test", Book: "book"})
+	av := []map[string]*dynamodb.AttributeValue{bookmark}
 	return &dynamodb.QueryOutput{
 		Items: av,
 		ConsumedCapacity: &dynamodb.ConsumedCapacity{

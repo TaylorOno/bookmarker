@@ -2,15 +2,14 @@ package routes
 
 import (
 	"encoding/json"
+	service2 "github.com/TaylorOno/bookmarker/service"
 	"log"
 	"net/http"
-
-	"github.com/TaylorOno/bookmarker/internal/service"
 )
 
 //SaveBookmark saves a users bookmark object.
 func (s *Server) SaveBookmark(w http.ResponseWriter, req *http.Request) {
-	var newBookmarkRequest service.NewBookmarkRequest
+	var newBookmarkRequest service2.NewBookmarkRequest
 	newBookmarkRequest, err := s.CreateSaveRequest(req)
 	if err != nil {
 		errorBody, _ := json.Marshal(err)
@@ -30,8 +29,8 @@ func (s *Server) SaveBookmark(w http.ResponseWriter, req *http.Request) {
 }
 
 //CreateSaveRequest extracts service.NewBookmarkRequest from a http.Request.
-func (s *Server) CreateSaveRequest(req *http.Request) (service.NewBookmarkRequest, error) {
-	var request service.NewBookmarkRequest
+func (s *Server) CreateSaveRequest(req *http.Request) (service2.NewBookmarkRequest, error) {
+	var request service2.NewBookmarkRequest
 	userId := getUserID(req.URL.Path)
 	err := getMethodBody(req, &request)
 	if err != nil {

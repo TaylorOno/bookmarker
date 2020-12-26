@@ -6,12 +6,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	service2 "github.com/TaylorOno/bookmarker/service"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 
-	"github.com/TaylorOno/bookmarker/internal/service"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 )
@@ -21,10 +21,10 @@ var (
 )
 
 type Bookmarker interface {
-	SaveBookmark(ctx context.Context, b service.NewBookmarkRequest) (service.Bookmark, error)
-	DeleteBookmark(ctx context.Context, b service.DeleteBookmarkRequest) error
-	GetBookmark(ctx context.Context, b service.BookmarkRequest) (service.Bookmark, error)
-	GetBookmarkList(ctx context.Context, b service.BookmarkListRequest) ([]service.Bookmark, error)
+	SaveBookmark(ctx context.Context, b service2.NewBookmarkRequest) (service2.Bookmark, error)
+	DeleteBookmark(ctx context.Context, b service2.DeleteBookmarkRequest) error
+	GetBookmark(ctx context.Context, b service2.BookmarkRequest) (service2.Bookmark, error)
+	GetBookmarkList(ctx context.Context, b service2.BookmarkListRequest) ([]service2.Bookmark, error)
 }
 
 type Server struct {
@@ -42,7 +42,7 @@ func (s *Server) SetRoutes() *mux.Router {
 	return r
 }
 
-func getMethodBody(req *http.Request, request *service.NewBookmarkRequest) error {
+func getMethodBody(req *http.Request, request *service2.NewBookmarkRequest) error {
 	if req.Body == nil {
 		return MissingBodyException
 	}
@@ -80,10 +80,10 @@ func getFilter(query url.Values) string {
 	return filter
 }
 
-func getLimit(query url.Values) int64 {
+func getLimit(query url.Values) int {
 	limit, err := strconv.Atoi(query.Get("limit"))
 	if err != nil {
 		return 30
 	}
-	return int64(limit)
+	return limit
 }
