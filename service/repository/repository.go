@@ -10,6 +10,12 @@ const (
 	_inProgressfilter = "IN_PROGRESS"
 	_finishedfilter   = "FINISHED"
 	_nonefilter       = "NONE"
+
+	_add    = "add"
+	_get    = "get"
+	_update = "update"
+	_delete = "delete"
+	_query  = "query"
 )
 
 var (

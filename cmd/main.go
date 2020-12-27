@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/TaylorOno/bookmarker/cmd/config"
+	"github.com/TaylorOno/bookmarker/cmd/metrics"
 	"github.com/TaylorOno/bookmarker/cmd/routes"
 	"github.com/TaylorOno/bookmarker/service"
 	"github.com/TaylorOno/bookmarker/service/repository"
@@ -17,8 +18,9 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
+	reporter:= metrics.NewConsoleReporter()
 	dynamoClient := config.NewDynamoClient(session)
-	repository := repository.NewDynamoRepository(dynamoClient, "bookmarks")
+	repository := repository.NewDynamoRepository(dynamoClient, "bookmarks").AddReporter(reporter)
 
 	bookmarkerService := &service.Service{
 		Repo: repository,
@@ -28,7 +30,7 @@ func main() {
 		BookmarkService: bookmarkerService,
 		Validate:        validator.New(),
 	}
-	router := server.SetRoutes()
+	router := server.SetRoutes(reporter)
 
 	http.ListenAndServe(":8080", router)
 }

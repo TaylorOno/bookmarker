@@ -6,7 +6,7 @@ package mocks
 
 import (
 	context "context"
-	service2 "github.com/TaylorOno/bookmarker/service"
+	service "github.com/TaylorOno/bookmarker/service"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
 )
@@ -35,10 +35,10 @@ func (m *MockBookmarker) EXPECT() *MockBookmarkerMockRecorder {
 }
 
 // SaveBookmark mocks base method
-func (m *MockBookmarker) SaveBookmark(ctx context.Context, b service2.NewBookmarkRequest) (service2.Bookmark, error) {
+func (m *MockBookmarker) SaveBookmark(ctx context.Context, b service.NewBookmarkRequest) (service.Bookmark, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveBookmark", ctx, b)
-	ret0, _ := ret[0].(service2.Bookmark)
+	ret0, _ := ret[0].(service.Bookmark)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -50,7 +50,7 @@ func (mr *MockBookmarkerMockRecorder) SaveBookmark(ctx, b interface{}) *gomock.C
 }
 
 // DeleteBookmark mocks base method
-func (m *MockBookmarker) DeleteBookmark(ctx context.Context, b service2.DeleteBookmarkRequest) error {
+func (m *MockBookmarker) DeleteBookmark(ctx context.Context, b service.DeleteBookmarkRequest) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteBookmark", ctx, b)
 	ret0, _ := ret[0].(error)
@@ -64,10 +64,10 @@ func (mr *MockBookmarkerMockRecorder) DeleteBookmark(ctx, b interface{}) *gomock
 }
 
 // GetBookmark mocks base method
-func (m *MockBookmarker) GetBookmark(ctx context.Context, b service2.BookmarkRequest) (service2.Bookmark, error) {
+func (m *MockBookmarker) GetBookmark(ctx context.Context, b service.BookmarkRequest) (service.Bookmark, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetBookmark", ctx, b)
-	ret0, _ := ret[0].(service2.Bookmark)
+	ret0, _ := ret[0].(service.Bookmark)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -79,10 +79,10 @@ func (mr *MockBookmarkerMockRecorder) GetBookmark(ctx, b interface{}) *gomock.Ca
 }
 
 // GetBookmarkList mocks base method
-func (m *MockBookmarker) GetBookmarkList(ctx context.Context, b service2.BookmarkListRequest) ([]service2.Bookmark, error) {
+func (m *MockBookmarker) GetBookmarkList(ctx context.Context, b service.BookmarkListRequest) ([]service.Bookmark, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetBookmarkList", ctx, b)
-	ret0, _ := ret[0].([]service2.Bookmark)
+	ret0, _ := ret[0].([]service.Bookmark)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -91,4 +91,61 @@ func (m *MockBookmarker) GetBookmarkList(ctx context.Context, b service2.Bookmar
 func (mr *MockBookmarkerMockRecorder) GetBookmarkList(ctx, b interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBookmarkList", reflect.TypeOf((*MockBookmarker)(nil).GetBookmarkList), ctx, b)
+}
+
+// MockReporter is a mock of Reporter interface
+type MockReporter struct {
+	ctrl     *gomock.Controller
+	recorder *MockReporterMockRecorder
+}
+
+// MockReporterMockRecorder is the mock recorder for MockReporter
+type MockReporterMockRecorder struct {
+	mock *MockReporter
+}
+
+// NewMockReporter creates a new mock instance
+func NewMockReporter(ctrl *gomock.Controller) *MockReporter {
+	mock := &MockReporter{ctrl: ctrl}
+	mock.recorder = &MockReporterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockReporter) EXPECT() *MockReporterMockRecorder {
+	return m.recorder
+}
+
+// ObserverHistogram mocks base method
+func (m *MockReporter) ObserverHistogram(name string, value float64, labels ...string) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{name, value}
+	for _, a := range labels {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "ObserverHistogram", varargs...)
+}
+
+// ObserverHistogram indicates an expected call of ObserverHistogram
+func (mr *MockReporterMockRecorder) ObserverHistogram(name, value interface{}, labels ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{name, value}, labels...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ObserverHistogram", reflect.TypeOf((*MockReporter)(nil).ObserverHistogram), varargs...)
+}
+
+// ObserverSummary mocks base method
+func (m *MockReporter) ObserverSummary(name string, value float64, labels ...string) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{name, value}
+	for _, a := range labels {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "ObserverSummary", varargs...)
+}
+
+// ObserverSummary indicates an expected call of ObserverSummary
+func (mr *MockReporterMockRecorder) ObserverSummary(name, value interface{}, labels ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{name, value}, labels...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ObserverSummary", reflect.TypeOf((*MockReporter)(nil).ObserverSummary), varargs...)
 }

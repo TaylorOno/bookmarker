@@ -148,3 +148,77 @@ func (mr *MockDynamoClientMockRecorder) WaitUntilTableExistsWithContext(arg0, ar
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WaitUntilTableExistsWithContext", reflect.TypeOf((*MockDynamoClient)(nil).WaitUntilTableExistsWithContext), varargs...)
 }
+
+// MockDynamoReporter is a mock of DynamoReporter interface
+type MockDynamoReporter struct {
+	ctrl     *gomock.Controller
+	recorder *MockDynamoReporterMockRecorder
+}
+
+// MockDynamoReporterMockRecorder is the mock recorder for MockDynamoReporter
+type MockDynamoReporterMockRecorder struct {
+	mock *MockDynamoReporter
+}
+
+// NewMockDynamoReporter creates a new mock instance
+func NewMockDynamoReporter(ctrl *gomock.Controller) *MockDynamoReporter {
+	mock := &MockDynamoReporter{ctrl: ctrl}
+	mock.recorder = &MockDynamoReporterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockDynamoReporter) EXPECT() *MockDynamoReporterMockRecorder {
+	return m.recorder
+}
+
+// ObserverHistogram mocks base method
+func (m *MockDynamoReporter) ObserverHistogram(name string, value float64, labels ...string) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{name, value}
+	for _, a := range labels {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "ObserverHistogram", varargs...)
+}
+
+// ObserverHistogram indicates an expected call of ObserverHistogram
+func (mr *MockDynamoReporterMockRecorder) ObserverHistogram(name, value interface{}, labels ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{name, value}, labels...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ObserverHistogram", reflect.TypeOf((*MockDynamoReporter)(nil).ObserverHistogram), varargs...)
+}
+
+// ObserverCount mocks base method
+func (m *MockDynamoReporter) ObserverCount(name string, value float64, labels ...string) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{name, value}
+	for _, a := range labels {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "ObserverCount", varargs...)
+}
+
+// ObserverCount indicates an expected call of ObserverCount
+func (mr *MockDynamoReporterMockRecorder) ObserverCount(name, value interface{}, labels ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{name, value}, labels...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ObserverCount", reflect.TypeOf((*MockDynamoReporter)(nil).ObserverCount), varargs...)
+}
+
+// ObserverSummary mocks base method
+func (m *MockDynamoReporter) ObserverSummary(name string, value float64, labels ...string) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{name, value}
+	for _, a := range labels {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "ObserverSummary", varargs...)
+}
+
+// ObserverSummary indicates an expected call of ObserverSummary
+func (mr *MockDynamoReporterMockRecorder) ObserverSummary(name, value interface{}, labels ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{name, value}, labels...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ObserverSummary", reflect.TypeOf((*MockDynamoReporter)(nil).ObserverSummary), varargs...)
+}

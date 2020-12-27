@@ -3,12 +3,14 @@ package routes_test
 import (
 	"bytes"
 	"fmt"
-	"github.com/TaylorOno/bookmarker/cmd/routes"
 	"io"
 	"io/ioutil"
 	"testing"
 
+	"github.com/TaylorOno/bookmarker/cmd/routes"
+	"github.com/TaylorOno/bookmarker/tests/mocks"
 	"github.com/TaylorOno/golandreporter"
+	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -19,10 +21,24 @@ func TestRoutes(t *testing.T) {
 }
 
 var _ = Describe("Router", func() {
+	var (
+		mockCtrl     *gomock.Controller
+		mockReporter *mocks.MockReporter
+	)
+
+	BeforeEach(func() {
+		mockCtrl = gomock.NewController(GinkgoT())
+		mockReporter = mocks.NewMockReporter(mockCtrl)
+	})
+
+	AfterEach(func() {
+		mockCtrl.Finish()
+	})
+
 	Context("SetRoutes", func() {
 		It("Returns a router", func() {
 			server := routes.Server{}
-			router := server.SetRoutes()
+			router := server.SetRoutes(mockReporter)
 			Expect(fmt.Sprintf("%T", router)).To(Equal("*mux.Router"))
 		})
 	})

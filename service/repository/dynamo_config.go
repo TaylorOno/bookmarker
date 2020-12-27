@@ -3,17 +3,11 @@ package repository
 import (
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 )
-
-//SetTimeOut sets the max timeout for all requests
-func SetTimeOut(t time.Duration) {
-	timeout = t
-}
 
 //NewDynamoRepository checks access to table an creates if it does not exists then returns the DynamoDB repository implementation
 func NewDynamoRepository(dynamoClient DynamoClient, tableName string) *Dynamo {
@@ -24,6 +18,12 @@ func NewDynamoRepository(dynamoClient DynamoClient, tableName string) *Dynamo {
 		Client:    dynamoClient,
 		TableName: tableName,
 	}
+}
+
+//AddReporter optionally adds a reporter to the Dynamo repo. The reporter will generate metrics based on response time as well as WCU and RCU counts.
+func (d *Dynamo) AddReporter(reporter DynamoReporter) *Dynamo {
+	d.Reporter = reporter
+	return d
 }
 
 //createTableIfNotExist if user has permission creates the DynamoDB bookmark table if it does not exist.

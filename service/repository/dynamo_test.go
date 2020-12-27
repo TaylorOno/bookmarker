@@ -3,7 +3,6 @@ package repository_test
 import (
 	"context"
 	"errors"
-	"time"
 
 	"github.com/TaylorOno/bookmarker/service/repository"
 	"github.com/TaylorOno/bookmarker/tests/mocks"
@@ -16,13 +15,13 @@ import (
 )
 
 var _ = Describe("Dynamo", func() {
-	repository.SetTimeOut(100 * time.Millisecond)
-
 	var (
-		mockCtrl      *gomock.Controller
-		dynamoClient  *mocks.MockDynamoClient
-		dynamo        *repository.Dynamo
-		putItemOutput = &dynamodb.PutItemOutput{
+		mockCtrl           *gomock.Controller
+		dynamoClient       *mocks.MockDynamoClient
+		reporter           *mocks.MockDynamoReporter
+		dynamo             *repository.Dynamo
+		dynamoWithReporter *repository.Dynamo
+		putItemOutput      = &dynamodb.PutItemOutput{
 			ConsumedCapacity: &dynamodb.ConsumedCapacity{
 				CapacityUnits: aws.Float64(1),
 			},
@@ -37,24 +36,20 @@ var _ = Describe("Dynamo", func() {
 	BeforeEach(func() {
 		mockCtrl = gomock.NewController(GinkgoT())
 		dynamoClient = mocks.NewMockDynamoClient(mockCtrl)
+		reporter = mocks.NewMockDynamoReporter(mockCtrl)
 		dynamo = &repository.Dynamo{
 			Client:    dynamoClient,
 			TableName: "test",
 		}
+		dynamoWithReporter = &repository.Dynamo{
+			Client:    dynamoClient,
+			TableName: "test",
+		}
+		dynamoWithReporter.AddReporter(reporter)
 	})
 
 	AfterEach(func() {
 		mockCtrl.Finish()
-	})
-
-	Context("NewDynamoRepository", func() {
-		It("Checks or Creates Table and returns a Dynamo Client", func() {
-			var client *repository.Dynamo
-			dynamoClient.EXPECT().CreateTable(gomock.Any())
-			dynamoClient.EXPECT().WaitUntilTableExistsWithContext(gomock.Any(), gomock.Any(), gomock.Any())
-			client = repository.NewDynamoRepository(dynamoClient, "testTable")
-			Expect(client).ToNot(BeNil())
-		})
 	})
 
 	Context("CreateBookmark", func() {
@@ -71,26 +66,19 @@ var _ = Describe("Dynamo", func() {
 			Expect(*argumentCapture.TableName).To(Equal("test"))
 		})
 
+		It("Calls reporter if enabled", func() {
+			bookmark := repository.UserBookmark{UserId: "user", Book: "book"}
+			dynamoClient.EXPECT().PutItemWithContext(gomock.Any(), gomock.Any()).Return(putItemOutput, nil)
+			reporter.EXPECT().ObserverHistogram("dynamo_latency_histogram", gomock.Any(), "add", gomock.Any())
+			reporter.EXPECT().ObserverSummary("dynamo_latency_summary", gomock.Any(), "add", gomock.Any())
+			reporter.EXPECT().ObserverCount("dynamo_capacity_used", gomock.Any(), "add", gomock.Any())
+			_, err := dynamoWithReporter.CreateBookmark(context.Background(), bookmark)
+			Expect(err).ToNot(HaveOccurred())
+		})
+
 		It("Returns error if save fails", func() {
 			bookmark := repository.UserBookmark{UserId: "user", Book: "book"}
 			dynamoClient.EXPECT().PutItemWithContext(gomock.Any(), gomock.Any()).Return(putItemOutput, errors.New("exception"))
-			_, err := dynamo.CreateBookmark(context.Background(), bookmark)
-			Expect(err).To(HaveOccurred())
-		})
-
-		It("Returns error if save times out", func() {
-			bookmark := repository.UserBookmark{UserId: "user", Book: "book"}
-			dynamoClient.EXPECT().
-				PutItemWithContext(gomock.Any(), gomock.Any()).
-				DoAndReturn(func(a context.Context, b *dynamodb.PutItemInput) (*dynamodb.PutItemOutput, error) {
-					time.Sleep(150 * time.Millisecond)
-					select {
-					case <-a.Done():
-						return nil, a.Err()
-					default:
-						return nil, nil
-					}
-				})
 			_, err := dynamo.CreateBookmark(context.Background(), bookmark)
 			Expect(err).To(HaveOccurred())
 		})
@@ -119,25 +107,18 @@ var _ = Describe("Dynamo", func() {
 			Expect(*(*argumentCapture.Key["Book"]).S).To(Equal("book"))
 		})
 
+		It("Calls dynamo delete with user and book", func() {
+			dynamoClient.EXPECT().DeleteItemWithContext(gomock.Any(), gomock.Any()).Return(deleteItemOutput, nil)
+			reporter.EXPECT().ObserverHistogram("dynamo_latency_histogram", gomock.Any(), "delete", gomock.Any())
+			reporter.EXPECT().ObserverSummary("dynamo_latency_summary", gomock.Any(), "delete", gomock.Any())
+			reporter.EXPECT().ObserverCount("dynamo_capacity_used", gomock.Any(), "delete", gomock.Any())
+			err := dynamoWithReporter.DeleteBookmark(context.Background(), "test", "book")
+			Expect(err).ToNot(HaveOccurred())
+		})
+
 		It("Returns error if delete fails", func() {
 			dynamoClient.EXPECT().DeleteItemWithContext(gomock.Any(), gomock.Any()).Return(deleteItemOutput, errors.New("exception"))
 			err := dynamo.DeleteBookmark(context.Background(), "test", "user")
-			Expect(err).To(HaveOccurred())
-		})
-
-		It("Returns error if get times out", func() {
-			dynamoClient.EXPECT().
-				DeleteItemWithContext(gomock.Any(), gomock.Any()).
-				DoAndReturn(func(a context.Context, b *dynamodb.DeleteItemInput) (*dynamodb.DeleteItemOutput, error) {
-					time.Sleep(150 * time.Millisecond)
-					select {
-					case <-a.Done():
-						return nil, a.Err()
-					default:
-						return nil, nil
-					}
-				})
-			err := dynamo.DeleteBookmark(context.Background(), "test", "book")
 			Expect(err).To(HaveOccurred())
 		})
 	})
@@ -161,6 +142,16 @@ var _ = Describe("Dynamo", func() {
 			Expect(result.UserId).To(Equal("test"))
 		})
 
+		It("Calls reporter if enabled", func() {
+			getItemOutput := testGetResponse(&repository.UserBookmark{UserId: "test", Book: "book"})
+			dynamoClient.EXPECT().GetItemWithContext(gomock.Any(), gomock.Any()).Return(getItemOutput, nil)
+			reporter.EXPECT().ObserverHistogram("dynamo_latency_histogram", gomock.Any(), "get", gomock.Any())
+			reporter.EXPECT().ObserverSummary("dynamo_latency_summary", gomock.Any(), "get", gomock.Any())
+			reporter.EXPECT().ObserverCount("dynamo_capacity_used", gomock.Any(), "get", gomock.Any())
+			_, err := dynamoWithReporter.GetBookmark(context.Background(), "test", "book")
+			Expect(err).ToNot(HaveOccurred())
+		})
+
 		It("Returns error if get fails", func() {
 			getItemOutput := testGetResponse(nil)
 			dynamoClient.EXPECT().GetItemWithContext(gomock.Any(), gomock.Any()).Return(getItemOutput, errors.New("exception"))
@@ -171,22 +162,6 @@ var _ = Describe("Dynamo", func() {
 		It("Returns error if item is not found", func() {
 			getItemOutput := testGetResponse(nil)
 			dynamoClient.EXPECT().GetItemWithContext(gomock.Any(), gomock.Any()).Return(getItemOutput, nil)
-			_, err := dynamo.GetBookmark(context.Background(), "test", "book")
-			Expect(err).To(HaveOccurred())
-		})
-
-		It("Returns error if get times out", func() {
-			dynamoClient.EXPECT().
-				GetItemWithContext(gomock.Any(), gomock.Any()).
-				DoAndReturn(func(a context.Context, b *dynamodb.GetItemInput) (*dynamodb.GetItemOutput, error) {
-					time.Sleep(150 * time.Millisecond)
-					select {
-					case <-a.Done():
-						return nil, a.Err()
-					default:
-						return nil, nil
-					}
-				})
 			_, err := dynamo.GetBookmark(context.Background(), "test", "book")
 			Expect(err).To(HaveOccurred())
 		})
@@ -244,6 +219,16 @@ var _ = Describe("Dynamo", func() {
 			Expect(*argumentCapture.IndexName).To(Equal("History"))
 			Expect(*argumentCapture.FilterExpression).To(Equal("#0 = :0"))
 			Expect(*argumentCapture.ExpressionAttributeValues[":0"].S).To(Equal("IN_PROGRESS"))
+		})
+
+		It("Calls reporter if enabled", func() {
+			getQueryOutput := testQueryResponse()
+			dynamoClient.EXPECT().QueryWithContext(gomock.Any(), gomock.Any()).Return(getQueryOutput, nil)
+			reporter.EXPECT().ObserverHistogram("dynamo_latency_histogram", gomock.Any(), "query", gomock.Any())
+			reporter.EXPECT().ObserverSummary("dynamo_latency_summary", gomock.Any(), "query", gomock.Any())
+			reporter.EXPECT().ObserverCount("dynamo_capacity_used", gomock.Any(), "query", gomock.Any())
+			_, err := dynamoWithReporter.GetBookmarks(context.Background(), "test", "NONE", 1)
+			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("Returns error if query fails", func() {

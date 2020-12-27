@@ -1,4 +1,4 @@
-//go:generate mockgen -destination=../../mocks/mock_bookmarker.go -package=mocks -source routes.go
+//go:generate mockgen -destination=../../tests/mocks/mock_bookmarker.go -package=mocks -source routes.go
 
 package routes
 
@@ -6,14 +6,16 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	service2 "github.com/TaylorOno/bookmarker/service"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 
+	"github.com/TaylorOno/bookmarker/cmd/middleware"
+	"github.com/TaylorOno/bookmarker/service"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 var (
@@ -21,10 +23,10 @@ var (
 )
 
 type Bookmarker interface {
-	SaveBookmark(ctx context.Context, b service2.NewBookmarkRequest) (service2.Bookmark, error)
-	DeleteBookmark(ctx context.Context, b service2.DeleteBookmarkRequest) error
-	GetBookmark(ctx context.Context, b service2.BookmarkRequest) (service2.Bookmark, error)
-	GetBookmarkList(ctx context.Context, b service2.BookmarkListRequest) ([]service2.Bookmark, error)
+	SaveBookmark(ctx context.Context, b service.NewBookmarkRequest) (service.Bookmark, error)
+	DeleteBookmark(ctx context.Context, b service.DeleteBookmarkRequest) error
+	GetBookmark(ctx context.Context, b service.BookmarkRequest) (service.Bookmark, error)
+	GetBookmarkList(ctx context.Context, b service.BookmarkListRequest) ([]service.Bookmark, error)
 }
 
 type Server struct {
@@ -32,9 +34,16 @@ type Server struct {
 	Validate        *validator.Validate
 }
 
+type Reporter interface {
+	ObserverHistogram(name string, value float64, labels ...string)
+	ObserverSummary(name string, value float64, labels ...string)
+}
+
 //SetRoutes registers the http routes and handlers
-func (s *Server) SetRoutes() *mux.Router {
+func (s *Server) SetRoutes(reporter Reporter) *mux.Router {
 	r := mux.NewRouter()
+	r.Use(middleware.NewInboundObserver(reporter))
+	r.Handle("/metrics", promhttp.Handler())
 	r.HandleFunc("/{user}", s.SaveBookmark).Methods(http.MethodPost)
 	r.HandleFunc("/{user}/{Book}", s.DeleteBookmark).Methods(http.MethodDelete)
 	r.HandleFunc("/{user}", s.GetBookmarks).Methods(http.MethodGet)
@@ -42,7 +51,7 @@ func (s *Server) SetRoutes() *mux.Router {
 	return r
 }
 
-func getMethodBody(req *http.Request, request *service2.NewBookmarkRequest) error {
+func getMethodBody(req *http.Request, request *service.NewBookmarkRequest) error {
 	if req.Body == nil {
 		return MissingBodyException
 	}

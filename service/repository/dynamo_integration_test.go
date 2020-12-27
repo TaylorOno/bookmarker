@@ -29,8 +29,6 @@ const (
 )
 
 var _ = Describe("Dynamo Integration", func() {
-	repository.SetTimeOut(100 * time.Millisecond)
-
 	var (
 		dynamoRepo *repository.Dynamo
 		closer     func()
