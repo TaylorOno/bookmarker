@@ -9,11 +9,15 @@ import (
 )
 
 type Service struct {
-	Repo repository.BookmarkRepository
+	repo repository.BookmarkRepository
+}
+
+func NewBookmarker(repository repository.BookmarkRepository) *Service {
+	return &Service{repo: repository}
 }
 
 func (s *Service) SaveBookmark(ctx context.Context, b NewBookmarkRequest) (Bookmark, error) {
-	result, err := s.Repo.CreateBookmark(ctx, createUserBookmark(b))
+	result, err := s.repo.CreateBookmark(ctx, createUserBookmark(b))
 	if err != nil {
 		return Bookmark{}, err
 	}
@@ -22,7 +26,7 @@ func (s *Service) SaveBookmark(ctx context.Context, b NewBookmarkRequest) (Bookm
 }
 
 func (s *Service) DeleteBookmark(ctx context.Context, b DeleteBookmarkRequest) error {
-	err := s.Repo.DeleteBookmark(ctx, b.UserId, strings.ToLower(b.Book))
+	err := s.repo.DeleteBookmark(ctx, b.UserId, strings.ToLower(b.Book))
 	if err != nil {
 		return err
 	}
@@ -31,7 +35,7 @@ func (s *Service) DeleteBookmark(ctx context.Context, b DeleteBookmarkRequest) e
 }
 
 func (s *Service) GetBookmark(ctx context.Context, b BookmarkRequest) (Bookmark, error) {
-	userBookmark, err := s.Repo.GetBookmark(ctx, b.UserId, strings.ToLower(b.Book))
+	userBookmark, err := s.repo.GetBookmark(ctx, b.UserId, strings.ToLower(b.Book))
 	if err != nil {
 		return Bookmark{}, err
 	}
@@ -40,7 +44,7 @@ func (s *Service) GetBookmark(ctx context.Context, b BookmarkRequest) (Bookmark,
 }
 
 func (s *Service) GetBookmarkList(ctx context.Context, b BookmarkListRequest) ([]Bookmark, error) {
-	userBookmarks, err := s.Repo.GetBookmarks(ctx, b.UserId, b.Filter, b.Limit)
+	userBookmarks, err := s.repo.GetBookmarks(ctx, b.UserId, b.Filter, b.Limit)
 	if err != nil {
 		return []Bookmark{}, err
 	}

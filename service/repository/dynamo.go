@@ -186,15 +186,16 @@ func min(i int, j int) int {
 }
 
 func (d *Dynamo) createFilterQuery(user string, statusFilter string) (*dynamodb.QueryInput, error) {
-	var expr expression.Expression
-	var err error
-
 	key := expression.Key("UserId").Equal(expression.Value(user))
 	filter := expression.Name("Status").Equal(expression.Value(statusFilter))
-	expr, err = expression.NewBuilder().WithKeyCondition(key).WithFilter(filter).Build()
+	expr, err := expression.NewBuilder().WithKeyCondition(key).WithFilter(filter).Build()
 
 	if statusFilter == _nonefilter {
 		expr, err = expression.NewBuilder().WithKeyCondition(key).Build()
+	}
+
+	if err != nil {
+		return nil, err
 	}
 
 	return &dynamodb.QueryInput{
@@ -211,6 +212,7 @@ func (d *Dynamo) createFilterQuery(user string, statusFilter string) (*dynamodb.
 	}, err
 }
 
+//observer reports latency summary and histograms as well as DynamoDB capacity used
 func (d *Dynamo) observer(start time.Time, capacity float64, operation string) {
 	if d.Reporter != nil {
 		d.Reporter.ObserverHistogram(_dynamoLatencyHistogram, float64(time.Since(start).Milliseconds()), operation, d.TableName)

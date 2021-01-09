@@ -3,6 +3,6 @@
 package middleware
 
 type reporter interface {
-	ObserverHistogram(name string, value float64, labels...string)
-	ObserverSummary(name string, value float64, labels...string)
+	ObserverHistogram(name string, value float64, labels ...string)
+	ObserverSummary(name string, value float64, labels ...string)
 }

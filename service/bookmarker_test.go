@@ -22,9 +22,7 @@ var _ = Describe("Service", func() {
 	BeforeEach(func() {
 		mockCtrl = gomock.NewController(GinkgoT())
 		mockRepo = mocks.NewMockBookmarkRepository(mockCtrl)
-		bookermarkService = &service.Service{
-			Repo: mockRepo,
-		}
+		bookermarkService = service.NewBookmarker(mockRepo)
 	})
 
 	AfterEach(func() {
@@ -32,7 +30,7 @@ var _ = Describe("Service", func() {
 	})
 
 	Context("SaveBookmark", func() {
-		It("Calls mockRepo CreateBookmark", func() {
+		It("Calls repository CreateBookmark", func() {
 			var b service.NewBookmarkRequest
 			mockRepo.EXPECT().CreateBookmark(gomock.Any(), gomock.Any())
 			bookermarkService.SaveBookmark(context.Background(), b)
@@ -47,7 +45,7 @@ var _ = Describe("Service", func() {
 	})
 
 	Context("DeleteBookmark", func() {
-		It("Calls mockRepo DeleteBookmark", func() {
+		It("Calls repository DeleteBookmark", func() {
 			var b service.DeleteBookmarkRequest
 			mockRepo.EXPECT().DeleteBookmark(gomock.Any(), gomock.Any(), gomock.Any())
 			bookermarkService.DeleteBookmark(context.Background(), b)
@@ -62,7 +60,7 @@ var _ = Describe("Service", func() {
 	})
 
 	Context("GetBookmark", func() {
-		It("Calls mockRepo GetBookmark", func() {
+		It("Calls repository GetBookmark", func() {
 			var b service.BookmarkRequest
 			mockRepo.EXPECT().GetBookmark(gomock.Any(), gomock.Any(), gomock.Any())
 			bookermarkService.GetBookmark(context.Background(), b)
@@ -77,7 +75,7 @@ var _ = Describe("Service", func() {
 	})
 
 	Context("GetBookmarkList", func() {
-		It("Calls mockRepo GetBookmarks", func() {
+		It("Calls repository GetBookmarks", func() {
 			var b service.BookmarkListRequest
 			mockRepo.EXPECT().GetBookmarks(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return([]repository.UserBookmark{{UserId: "test"}}, nil)
 			bookermarkService.GetBookmarkList(context.Background(), b)

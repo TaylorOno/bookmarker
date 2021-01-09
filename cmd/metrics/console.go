@@ -12,11 +12,11 @@ func NewConsoleReporter() *console {
 	return &console{}
 }
 
-func (c *console) ObserverHistogram(name string, value float64, labels...string) {
+func (c *console) ObserverHistogram(name string, value float64, labels ...string) {
 	writeLog(name, value, labels)
 }
 
-func (c *console) ObserverSummary(name string, value float64, labels...string) {
+func (c *console) ObserverSummary(name string, value float64, labels ...string) {
 	writeLog(name, value, labels)
 }
 
